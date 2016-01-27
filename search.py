@@ -6,13 +6,17 @@ sys.setdefaultencoding('utf8')
 
 def search(text, key):
     candidates = []
+    i = 0
     lines = text.splitlines()
     for line in lines:
+        i += 1
         s = line_similarity_of_key(line, key)
         if s > (len(key.split()) / 2):
-            candidates.append((s, line))
-    candidates.sort(key=lambda x: x[0], reverse=True)
-    return candidates
+            candidates.append({'s': s, 'line': line, 'line_num': i})
+    if not candidates:
+        return [], 0
+    candidates.sort(key=lambda x: x['s'], reverse=True)
+    return candidates, candidates[0]['s']
 
 
 def line_similarity_of_key(line, key):
@@ -30,14 +34,27 @@ def line_similarity_of_key(line, key):
 
 
 def line_similarity_of_word(line, start, word):
-    i = line.find(word, start)
+    i = 0
+    try:
+        i = line.find(word, start)
+    except:
+        print line
+        return 0, 0
     similarity = 1 if i >= 0 else 0
     return similarity, i
 
 
 def result_str(result):
-    return u'\n'.join([str(x[0]) + ':' + x[1] for x in result])
+    output_count = 3
+    output_list = []
+    for i in range(output_count):
+        output_list.append(result[i])
+    return u'\n'.join([item_str(x) for x in output_list]) + u'\n'
 
+
+
+def item_str(x):
+    return ''.join([str(x['s']), ': (', str(x['line_num']) , ')', x['line']])
 
 if __name__ == '__main__':
 

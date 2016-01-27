@@ -125,16 +125,33 @@ class ClientFrame(wx.Frame):
         key = self.buttonBox.getSearchKey()
         self.cleanMainText()
         self.showInfo('Search key: ' + key)
-        for file_item in self.sourceFiles:
-            result = self.search_file(key, file_item)
-            if result:
-                self.showAppendMainText(file_item['file_path'])
-                result_output = search.result_str(result)
-                self.showAppendMainText(result_output)
+        result_list = self.search_file_list(key, self.sourceFiles)
+        self.print_result_list(result_list)
         self.showStatus('Search finished.')
+
+    def search_file_list(self, key, file_list):
+        result_list = []
+        for file_item in self.sourceFiles:
+            file_path = file_item['file_path']
+            self.showAppendInfo(file_path)
+            result, s = self.search_file(key, file_item)
+            if result:
+                result_list.append({'s': s, 'result': result, 'file_path': file_path})
+        return result_list
+
 
     def search_file(self, key, file_item):
         return search.search(file_item['text'], key)
+
+    def print_result_list(self, result_list):
+        result_list.sort(key=lambda x: x['s'], reverse=True)
+        for item in result_list:
+            self.show_result(item['file_path'], item['result'])
+
+    def show_result(self, file_path, result):
+        self.showAppendMainText(file_path)
+        result_output = search.result_str(result)
+        self.showAppendMainText(result_output)
 
 
 def main():
