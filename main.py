@@ -1,4 +1,5 @@
 # -*- coding:UTF-8 -*-
+import os
 import wx
 import buttonPanel
 import search
@@ -9,6 +10,7 @@ class ClientFrame(wx.Frame):
         wx.Frame.__init__(
             self, None, -1, u'search', size=(1000, 600)
             )
+        self.moreLine = False
         self.sourceFiles = []
         self.files = []
         self.folderPath = ''
@@ -30,7 +32,7 @@ class ClientFrame(wx.Frame):
         self.buttonBox = buttonPanel.ButtonBox(mainPanel)
         mainSizer.Add(self.buttonBox, proportion=0, flag= wx.TOP, border=5)
 
-        self.mainText = wx.TextCtrl(mainPanel, -1, style=wx.TE_MULTILINE)
+        self.mainText = wx.TextCtrl(mainPanel, -1, style=wx.TE_MULTILINE | wx.TE_RICH)
         mainSizer.Add(self.mainText, proportion= 1, flag=wx.TOP | wx.EXPAND, border=5)
         #self.grid = grid.FileTableGrid(mainPanel)
         #mainSizer.Add(self.grid, proportion= 1, flag=wx.TOP | wx.EXPAND,  border=5)
@@ -43,7 +45,7 @@ class ClientFrame(wx.Frame):
         infoPanel.SetBackgroundColour("white")
 
         vbox = wx.BoxSizer(wx.VERTICAL)
-        self.infoText = wx.TextCtrl(infoPanel, -1, style=wx.TE_MULTILINE)
+        self.infoText = wx.TextCtrl(infoPanel, -1, style=wx.TE_MULTILINE | wx.TE_RICH)
         vbox.Add(self.infoText, proportion=1, flag=wx.EXPAND | wx.ALL)
         infoPanel.SetSizerAndFit(vbox)
         return infoPanel
@@ -58,20 +60,23 @@ class ClientFrame(wx.Frame):
                                            self.onFileOpenButtonClick)
         self.buttonBox.buttonSearch.Bind(wx.EVT_BUTTON,
                                          self.onFileSearchButtonClick)
+        self.buttonBox.buttonMoreLine.Bind(wx.EVT_BUTTON,
+                                         self.onFileMoreLineButtonClick)
         self.buttonBox.searchKeyInput.Bind(wx.EVT_TEXT_ENTER,
                                            self.onFileSearchButtonClick)
 
     def onFileSearchButtonClick(self, evt):
         self.search()
 
+    def onFileMoreLineButtonClick(self, evt):
+        self.moreLine = not self.moreLine
+
     #########################
     def showAppendMainText(self, text):
-        old_text = self.mainText.GetValue()
-        self.showMainText(old_text + u'\n' + text)
+        self.mainText.AppendText('\n' + text)
 
     def showAppendInfo(self, text):
-        old_text = self.infoText.GetValue()
-        self.showInfo(old_text + u'\n' + text)
+        self.infoText.AppendText('\n' + text)
 
     def showMainText(self, text):
         if not text:
@@ -124,13 +129,18 @@ class ClientFrame(wx.Frame):
     def search(self):
         key = self.buttonBox.getSearchKey()
         self.cleanMainText()
+        self.showMainText('key: [' + str(len(key.split())) + ']')
         self.showInfo('Search key: ' + key)
         result_list = self.search_file_list(key, self.sourceFiles)
         self.print_result_list(result_list)
         self.showStatus('Search finished.')
+        self.mainText.SaveFile(os.path.split(os.path.realpath(__file__))[0] + '/search_output.txt')
+        self.highlight_keywords(key)
+        self.mainText.ShowPosition(0)
 
     def search_file_list(self, key, file_list):
         result_list = []
+        words_positions = []
         for file_item in self.sourceFiles:
             file_path = file_item['file_path']
             self.showAppendInfo(file_path)
@@ -141,7 +151,7 @@ class ClientFrame(wx.Frame):
 
 
     def search_file(self, key, file_item):
-        return search.search(file_item['text'], key)
+        return search.search(file_item['text'], key, self.moreLine)
 
     def print_result_list(self, result_list):
         result_list.sort(key=lambda x: x['s'], reverse=True)
@@ -149,11 +159,40 @@ class ClientFrame(wx.Frame):
             self.show_result(item['file_path'], item['result'])
 
     def show_result(self, file_path, result):
-        self.showAppendMainText(file_path)
+        notice = '----------------'
+        self.showAppendMainText(notice + file_path + notice)
         result_output = search.result_str(result)
         self.showAppendMainText(result_output)
 
+    #########################
+    def highlight_keywords(self, key):
+        text = self.mainText.GetValue().lower()
+        words = key.lower().split()
+        for word in words:
+            self.hightlight_word(word, text)
 
+    def hightlight_word(self, word, text):
+        find_start = 0
+        i = 0
+        while (find_start < len(text)) and (i >= 0):
+            i = text.find(word, find_start)
+            if i >= 0:
+                end = i + len(word)
+                self.highlight(i, end)
+                find_start = end
+
+    def highlight(self, start, end):
+        highlight_font = wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
+        self.mainText.SetStyle(start, end, wx.TextAttr("red", font=highlight_font))
+
+
+#########################
+def save_to_file(file_path, text):
+    with open(file_path, 'w') as f:
+        f.write(text)
+
+
+#########################
 def main():
     app = wx.PySimpleApp()
     frame = ClientFrame()

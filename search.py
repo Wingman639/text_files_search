@@ -4,7 +4,31 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 
-def search(text, key):
+def search(text, key, more_line=False):
+    if more_line:
+        return fetch_previous_and_current_line_search(text, key)
+    else:
+        return only_fetch_current_line_search(text, key)
+
+
+def fetch_previous_and_current_line_search(text, key):
+    print 'fetch_previous_and_current_line_search'
+    candidates = []
+    lines = text.splitlines()
+    for i in range(len(lines)):
+        line = lines[i]
+        s = line_similarity_of_key(line, key)
+        if s > (len(key.split()) / 2):
+            better_line = line
+            if i > 1:
+                better_line = lines[i-1] + '\n' + line
+            candidates.append({'s': s, 'line': better_line, 'line_num': i+1})
+    if not candidates:
+        return [], 0
+    candidates.sort(key=lambda x: x['s'], reverse=True)
+    return candidates, candidates[0]['s']
+
+def only_fetch_current_line_search(text, key):
     candidates = []
     i = 0
     lines = text.splitlines()
@@ -17,7 +41,6 @@ def search(text, key):
         return [], 0
     candidates.sort(key=lambda x: x['s'], reverse=True)
     return candidates, candidates[0]['s']
-
 
 def line_similarity_of_key(line, key):
     key_words = key.lower().split()
@@ -45,7 +68,7 @@ def line_similarity_of_word(line, start, word):
 
 
 def result_str(result):
-    output_count = 3
+    output_count = min(3, len(result))
     output_list = []
     for i in range(output_count):
         output_list.append(result[i])

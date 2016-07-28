@@ -20,6 +20,7 @@ class ButtonBox(wx.Panel):
         #self.addRenameBox(sizer)
         #self.addExportButton(sizer)
         self.addSearchButton(sizer)
+        self.addMoreLineButton(sizer)
         self.SetSizer(sizer)
 
 
@@ -98,6 +99,10 @@ class ButtonBox(wx.Panel):
     def addSearchButton(self, sizer):
         self.buttonSearch = wx.Button(self, -1, u"Search", size=(-1, 37))
         sizer.Add(self.buttonSearch, 0, flag=wx.LEFT | wx.ALIGN_CENTER_VERTICAL, border=30)
+
+    def addMoreLineButton(self, sizer):
+        self.buttonMoreLine = wx.Button(self, -1, u"More Line", size=(-1, 37))
+        sizer.Add(self.buttonMoreLine, 0, flag=wx.LEFT | wx.ALIGN_CENTER_VERTICAL, border=10)
 
 
     def getSearchKey(self):
