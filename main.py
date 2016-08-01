@@ -3,6 +3,7 @@ import os
 import wx
 import buttonPanel
 import search
+import re_search
 
 
 class ClientFrame(wx.Frame):
@@ -64,12 +65,17 @@ class ClientFrame(wx.Frame):
                                          self.onFileMoreLineButtonClick)
         self.buttonBox.searchKeyInput.Bind(wx.EVT_TEXT_ENTER,
                                            self.onFileSearchButtonClick)
+        self.buttonBox.buttonRegExpSearch.Bind(wx.EVT_BUTTON,
+                                         self.onRegExpSearchButtonClick)
 
     def onFileSearchButtonClick(self, evt):
         self.search()
 
     def onFileMoreLineButtonClick(self, evt):
         self.moreLine = not self.moreLine
+
+    def onRegExpSearchButtonClick(self, event):
+        self.re_search()
 
     #########################
     def showAppendMainText(self, text):
@@ -163,6 +169,35 @@ class ClientFrame(wx.Frame):
         self.showAppendMainText(notice + file_path + notice)
         result_output = search.result_str(result)
         self.showAppendMainText(result_output)
+
+
+    #########################
+    def re_search(self):
+        patten_str = self.buttonBox.getSearchKey()
+        self.cleanMainText()
+        self.showMainText('re patten: "%s"' % patten_str)
+        self.showInfo('Search key: ' + patten_str)
+        result_list = self.re_search_file_list(patten_str, self.sourceFiles)
+        self.print_result_list(result_list)
+        self.showStatus('Search finished.')
+        self.mainText.SaveFile(os.path.split(os.path.realpath(__file__))[0] + '/search_output.txt')
+        # self.highlight_keywords(key)
+        self.mainText.ShowPosition(0)
+
+    def re_search_file_list(self, patten_str, file_list):
+        result_list = []
+        words_positions = []
+        for file_item in self.sourceFiles:
+            file_path = file_item['file_path']
+            self.showAppendInfo(file_path)
+            result, s = self.re_search_file(patten_str, file_item)
+            if result:
+                result_list.append({'s': s, 'result': result, 'file_path': file_path})
+        return result_list
+
+
+    def re_search_file(self, patten_str, file_item):
+        return re_search.search(file_item['text'], patten_str)
 
     #########################
     def highlight_keywords(self, key):

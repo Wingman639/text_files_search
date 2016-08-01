@@ -21,6 +21,7 @@ class ButtonBox(wx.Panel):
         #self.addExportButton(sizer)
         self.addSearchButton(sizer)
         self.addMoreLineButton(sizer)
+        self.addRegExpSearchButton(sizer)
         self.SetSizer(sizer)
 
 
@@ -28,7 +29,7 @@ class ButtonBox(wx.Panel):
         box = wx.BoxSizer(wx.VERTICAL)
         self.addOpenFileButton(box)
         #self.addOpenFolderButton(box)
-        sizer.Add(box,  0, flag=wx.LEFT | wx.ALIGN_CENTER_VERTICAL, border=30)
+        sizer.Add(box,  0, flag=wx.LEFT | wx.ALIGN_CENTER_VERTICAL, border=10)
 
     def addOpenFileButton(self, sizer):
         self.buttonOpenFile = wx.Button(self, -1, u"Open File", size=(-1, 37))
@@ -41,7 +42,7 @@ class ButtonBox(wx.Panel):
 
     def addSearchKeyText(self, sizer):
         self.searchKeyInput = wx.TextCtrl(self, -1, "", size=(600, -1), style=wx.TE_PROCESS_ENTER)
-        sizer.Add(self.searchKeyInput, flag=wx.LEFT | wx.ALIGN_CENTER_VERTICAL, border=30)
+        sizer.Add(self.searchKeyInput, flag=wx.LEFT | wx.ALIGN_CENTER_VERTICAL, border=10)
 
     '''
     def addRenameGroup(self, sizer):
@@ -98,12 +99,15 @@ class ButtonBox(wx.Panel):
 
     def addSearchButton(self, sizer):
         self.buttonSearch = wx.Button(self, -1, u"Search", size=(-1, 37))
-        sizer.Add(self.buttonSearch, 0, flag=wx.LEFT | wx.ALIGN_CENTER_VERTICAL, border=30)
+        sizer.Add(self.buttonSearch, 0, flag=wx.LEFT | wx.ALIGN_CENTER_VERTICAL, border=10)
 
     def addMoreLineButton(self, sizer):
         self.buttonMoreLine = wx.Button(self, -1, u"More Line", size=(-1, 37))
         sizer.Add(self.buttonMoreLine, 0, flag=wx.LEFT | wx.ALIGN_CENTER_VERTICAL, border=10)
 
+    def addRegExpSearchButton(self, sizer):
+        self.buttonRegExpSearch = wx.Button(self, -1, u"RegExp", size=(-1, 37))
+        sizer.Add(self.buttonRegExpSearch, 0, flag=wx.LEFT | wx.ALIGN_CENTER_VERTICAL, border=10)
 
     def getSearchKey(self):
         return self.searchKeyInput.GetValue()
