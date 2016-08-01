@@ -138,7 +138,7 @@ class ClientFrame(wx.Frame):
         self.showMainText('key: [' + str(len(key.split())) + ']')
         self.showInfo('Search key: ' + key)
         result_list = self.search_file_list(key, self.sourceFiles)
-        self.print_result_list(result_list)
+        self.print_sorted_result_list(result_list)
         self.showStatus('Search finished.')
         self.mainText.SaveFile(os.path.split(os.path.realpath(__file__))[0] + '/search_output.txt')
         self.highlight_keywords(key)
@@ -159,8 +159,12 @@ class ClientFrame(wx.Frame):
     def search_file(self, key, file_item):
         return search.search(file_item['text'], key, self.moreLine)
 
-    def print_result_list(self, result_list):
+    def print_sorted_result_list(self, result_list):
         result_list.sort(key=lambda x: x['s'], reverse=True)
+        self.print_result_list(result_list)
+
+
+    def print_result_list(self, result_list):
         for item in result_list:
             self.show_result(item['file_path'], item['result'])
 
@@ -178,7 +182,7 @@ class ClientFrame(wx.Frame):
         self.showMainText('re patten: "%s"' % patten_str)
         self.showInfo('Search key: ' + patten_str)
         result_list = self.re_search_file_list(patten_str, self.sourceFiles)
-        self.print_result_list(result_list)
+        self.re_print_result_list(result_list)
         self.showStatus('Search finished.')
         self.mainText.SaveFile(os.path.split(os.path.realpath(__file__))[0] + '/search_output.txt')
         # self.highlight_keywords(key)
@@ -198,6 +202,16 @@ class ClientFrame(wx.Frame):
 
     def re_search_file(self, patten_str, file_item):
         return re_search.search(file_item['text'], patten_str)
+
+    def re_print_result_list(self, result_list):
+        for item in result_list:
+            self.re_show_result(item['file_path'], item['result'])
+
+    def re_show_result(self, file_path, result):
+        notice = '----------------'
+        self.showAppendMainText(notice + file_path + notice)
+        result_output = re_search.result_str(result)
+        self.showAppendMainText(result_output)
 
     #########################
     def highlight_keywords(self, key):
